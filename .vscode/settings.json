@@ -1,0 +1,23 @@
+{
+  "clangd.arguments": [
+    "--query-driver=/home/dessera/.platformio/packages/toolchain-riscv32-esp/bin/riscv32-esp-elf-g++",
+    "--all-scopes-completion",
+    "--background-index",
+    "--clang-tidy",
+    "--clang-tidy-checks=performance-*, bugprone-*, misc-*, google-*, modernize-*, readability-*, portability-*",
+    "--compile-commands-dir=${workspaceFolder}/.vscode",
+    "--completion-parse=auto",
+    "--completion-style=detailed",
+    "--enable-config",
+    "--fallback-style=Google",
+    "--function-arg-placeholders=true",
+    "--header-insertion-decorators",
+    "--header-insertion=iwyu",
+    "--include-cleaner-stdlib",
+    "--log=verbose",
+    "--pch-storage=memory",
+    "--pretty",
+    "--ranking-model=decision_forest",
+    "-j=12"
+  ],
+}

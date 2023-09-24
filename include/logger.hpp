@@ -1,7 +1,6 @@
 #pragma once
 
 #include "HardwareSerial.h"
-#include "utils.hpp"
 
 enum class LogLevel : uint8_t { DEBUG, INFO, WARN, ERROR };
 
@@ -73,9 +72,4 @@ class Logger {
   }
 };
 
-class UseSerialLogger {
- public:
-  Logger operator()() { return Logger(Serial); }
-};
-
-using SerialLogger = Singleton<Logger, UseSerialLogger>;
+extern Logger SerialLogger;

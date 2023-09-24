@@ -11,4 +11,7 @@ void Logger::format(LogLevel level, const char* fmt, ...) {
   va_start(args, fmt);
   m_serial.printf(fmt, args);
   va_end(args);
+  m_serial.println();
 }
+
+Logger SerialLogger = Logger(Serial);

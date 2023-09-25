@@ -1,5 +1,7 @@
 #include "logger.hpp"
 
+#include "config.hpp"
+
 void Logger::log(LogLevel level, const char* msg) {
   this->_print_log_level(level);
   m_serial.println(msg);
@@ -14,4 +16,4 @@ void Logger::format(LogLevel level, const char* fmt, ...) {
   m_serial.println();
 }
 
-Logger SerialLogger = Logger(Serial);
+Logger SerialLogger = Logger(Serial, LOGGER_USING_BAUD);

@@ -1,15 +1,19 @@
 #pragma once
 
+#include <array>
+
 #include "HardwareSerial.h"
 
-enum class LogLevel : uint8_t { DEBUG, INFO, WARN, ERROR };
+enum class LogLevel : uint8_t { DEBUG = 0, INFO, WARN, ERROR };
 
 class Logger {
  private:
   HardwareSerial& m_serial;
 
  public:
-  explicit Logger(HardwareSerial& serial) : m_serial(serial){};
+  explicit Logger(HardwareSerial& serial, uint32_t baud) : m_serial(serial) {
+    m_serial.begin(baud);
+  };
   ~Logger() = default;
 
   Logger(const Logger&) = delete;
@@ -67,6 +71,8 @@ class Logger {
         break;
       case LogLevel::ERROR:
         m_serial.print("[ERROR] ");
+        break;
+      default:
         break;
     }
   }

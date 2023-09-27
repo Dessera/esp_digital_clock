@@ -7,7 +7,6 @@
 
 #include "RtcDateTime.h"
 #include "config.hpp"
-#include "logger.hpp"
 
 template <uint8_t IO, uint8_t CLK, uint8_t CE>
 class RTClock {
@@ -42,19 +41,17 @@ class RTCUpdater {
   RTClock<IO, CLK, CE>& m_clock;
 
  public:
-  RTCUpdater(RTClock<IO, CLK, CE>& clock, uint8_t timer_id, uint8_t divider,
-             uint32_t interval, void (*callback)() = nullptr)
-      : m_timer(timerBegin(timer_id, divider, true)), m_clock(clock) {
-    timerAttachInterrupt(m_timer, callback, true);
-    timerAlarmWrite(m_timer, interval, true);
-    timerAlarmEnable(m_timer);
-  }
+  RTCUpdater(RTClock<IO, CLK, CE>& clock, uint8_t timer_id, uint8_t divider)
+      : m_timer(timerBegin(timer_id, divider, true)), m_clock(clock) {}
 
   inline RtcDateTime& last_time() { return m_last_time; }
   inline void update() { m_last_time = m_clock.now(); }
+  inline void begin(uint32_t interval, void (*cb)()) {
+    timerAttachInterrupt(m_timer, cb, true);
+    timerAlarmWrite(m_timer, interval, true);
+    timerAlarmEnable(m_timer);
+  }
 };
-
-class GlobalRTClockUpdaterFn;
 
 extern RTClock<RTC_IO, RTC_SCLK, RTC_CE> GlobalRTClock;
 extern RTCUpdater<RTC_IO, RTC_SCLK, RTC_CE> GlobalRTClockUpdater;

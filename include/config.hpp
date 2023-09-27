@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-constexpr uint8_t RTC_SCLK = 2;
+constexpr uint8_t RTC_SCLK = 19;
 constexpr uint8_t RTC_IO = 3;
-constexpr uint8_t RTC_CE = 5;
+constexpr uint8_t RTC_CE = 2;
 
 constexpr uint8_t RTC_UPDATE_USING_TIMER = 0;
 constexpr uint8_t RTC_UPDATE_USING_DIVIDER = 80;

@@ -1,0 +1,1 @@
+#include "eclock/widget.hpp"

@@ -50,13 +50,16 @@ class Button {
   inline uint8_t get_pin() const { return pin; }
 };
 
+using ButtonEvent = struct {
+  uint8_t pin;
+  ButtonState type;
+};
+
 template <size_t N>
 class ButtonsEventQueue {
  public:
-  using Event = std::pair<uint8_t, ButtonState>;
-
  private:
-  std::queue<Event> event_queue{};
+  std::queue<ButtonEvent> event_queue{};
   std::array<std::unique_ptr<Button>, N> buttons{};
   uint8_t button_count{0};
 
@@ -83,13 +86,14 @@ class ButtonsEventQueue {
     for (auto& button : buttons) {
       auto state = button->spin_once();
       if (state != ButtonState::NO_STATE) {
-        event_queue.push(std::make_pair(button->get_pin(), state));
+        event_queue.push(ButtonEvent{button->get_pin(), state});
+        button->clear_state();
       }
     }
   }
 
   inline bool empty() const { return event_queue.empty(); }
-  Event pop_event() {
+  ButtonEvent pop_event() {
     auto event = event_queue.front();
     event_queue.pop();
     return event;

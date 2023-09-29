@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+
 #pragma region Configurations
 
 constexpr uint8_t RTC_SCLK = 19;
@@ -16,6 +17,9 @@ constexpr uint8_t BTN_2_PIN = 10;
 constexpr uint8_t BTN_3_PIN = 7;
 constexpr uint8_t BTN_PRESS_THRESHOLD = 10;
 constexpr uint8_t BTN_LONG_PRESS_THRESHOLD = 50;
+
+constexpr uint8_t BEEP_PIN = 18;
+constexpr uint8_t BEEP_STRENGTH = 10;
 
 constexpr uint32_t LOGGER_BAUD = 9600;
 

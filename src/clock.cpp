@@ -3,6 +3,7 @@
 RTClock<RTC_IO, RTC_SCLK, RTC_CE> GlobalRTClock{};
 RTClockVisualizer<SCREEN_SDA, SCREEN_SCL, SCREEN_ADDR>
     GlobalRTClockVisualizer{};
+RTClockAlarmWatcher<BEEP_PIN> GlobalRTClockAlarmWatcher{BEEP_STRENGTH};
 
 // RTClock<RTC_IO, RTC_SCLK, RTC_CE> GlobalRTClock =
 //     RTClock<RTC_IO, RTC_SCLK, RTC_CE>();

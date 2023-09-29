@@ -3,6 +3,8 @@
 #include "eclock/button.hpp"
 #include "eclock/clock.hpp"
 #include "eclock/config.hpp"
+#include "eclock/interface.hpp"
+#include "esp32-hal.h"
 
 // #include "button.hpp"
 // #include "clock.hpp"
@@ -11,8 +13,13 @@
 TaskHandle_t eclock_update_screen_task_handle;
 void eclock_update_screen_task(void* arg) {
   while (true) {
-    GlobalRTClockVisualizer.sync_buffer();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    if (GlobalRTClockVisualizer.is_buffer_edited()) {
+      GlobalRTClockVisualizer.sync_buffer();
+      GlobalRTClockVisualizer.clear_buffer_edited_flag();
+    }
+
+    // delay 0.5s
+    vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 }
 
@@ -32,11 +39,26 @@ void eclock_poll_button_task(void* arg) {
       vTaskDelay(10);
     }
     auto event = GlobalEventQueue.pop_event();
+    GlobalUIManager.on_event(event);
+  }
+}
 
-    // when user interface is implemented, this is where the event should be sent
+TaskHandle_t eclock_ui_manager_task_handle;
+void eclock_ui_manager_task(void* arg) {
+  while (true) {
+    GlobalUIManager.on_tick();
+    vTaskDelay(10);
+  }
+}
 
-    // Serial.printf("Button %d %s\n", event.first, event.second ==
-    // ButtonState::PRESSED ? "pressed" : "long pressed");
+TaskHandle_t eclock_alarm_task_handle;
+void eclock_alarm_task(void* arg) {
+  static time_t current = 0;
+  while (true) {
+    current = GlobalRTClock.get_time();
+    GlobalRTClockAlarmWatcher.spin_once(current);
+    GlobalRTClockAlarmWatcher.sync_beep(current);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
@@ -56,6 +78,10 @@ void setup() {
               1, &eclock_push_button_task_handle);
   xTaskCreate(eclock_poll_button_task, "eclock_poll_button_task", 1024, nullptr,
               1, &eclock_pop_button_task_handle);
+  xTaskCreate(eclock_ui_manager_task, "eclock_ui_manager_task", 1024, nullptr,
+              1, &eclock_ui_manager_task_handle);
+  xTaskCreate(eclock_alarm_task, "eclock_alarm_task", 1024, nullptr, 1,
+              &eclock_alarm_task_handle);
   // Serial.begin(LOGGER_USING_BAUD);
   // GlobalButtonGroup.create_button(BUTTON_1_USING_PIN, BUTTON_PRESS_THRESHOLD,
   //                                 BUTTON_LONG_PRESS_THRESHOLD);
@@ -67,8 +93,4 @@ void setup() {
   // GlobalRTClockVisualizer.begin();
 }
 
-void loop() {
-  // GlobalInterface->display(GlobalButtonGroup.get_current_button(),
-  //                          GlobalButtonGroup.get_current_state(),
-  //                          GlobalRTClockUpdater.last_time());
-}
+void loop() {}

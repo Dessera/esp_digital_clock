@@ -21,6 +21,12 @@ constexpr std::array<uint8_t, 11> LED_VISUALIZE_NUM_TABLE{
 constexpr std::array<uint8_t, 11> LED_VISUALIZE_NUM_TABLE_INVERSED = {
     0xaf, 0xa0, 0xC7, 0xE5, 0xE8, 0x6d, 0x6F, 0xA4, 0xEF, 0xED, 0x00};
 
+constexpr uint8_t BUTTON_1_USING_PIN = 13;
+constexpr uint8_t BUTTON_2_USING_PIN = 10;
+constexpr uint8_t BUTTON_3_USING_PIN = 7;
+constexpr uint8_t BUTTON_PRESS_THRESHOLD = 10;
+constexpr uint8_t BUTTON_LONG_PRESS_THRESHOLD = 50;
+
 constexpr uint32_t LOGGER_USING_BAUD = 9600;
 
 // constexpr uint8_t

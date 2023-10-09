@@ -32,7 +32,7 @@ void TimeDisplayUI::on_event(const ButtonEvent& event) {
     if (event.type == ButtonState::LONG_PRESSED) {
       GlobalUIManager.set_ui(&TimeEdit);
     } else if (event.type == ButtonState::PRESSED) {
-      GlobalRTClockAlarmWatcher.add_alarm(current_tm + 5);
+      // GlobalRTClockAlarmWatcher.add_alarm(current_tm + 5);
     }
   }
 }
@@ -86,9 +86,7 @@ void TimeEditUI::on_load(UserInterface* previous_ui) {
   GlobalRTClock.get_tm_struct(&init_time);
 }
 
-void TimeEditUI::on_unload(UserInterface* next_ui) {
-  GlobalRTClock.set_tm_struct(&init_time);
-}
+void TimeEditUI::on_unload(UserInterface* next_ui) {}
 
 void TimeEditUI::on_event(const ButtonEvent& event) {
   if (event.pin == BTN_3_PIN) {
@@ -98,6 +96,9 @@ void TimeEditUI::on_event(const ButtonEvent& event) {
   } else if (event.pin == BTN_1_PIN) {
     if (event.type == ButtonState::PRESSED) {
       GlobalRTClock.set_tm_struct(&init_time);
+      GlobalRTClock.get_tm_struct(&init_time);
+    } else {
+      GlobalUIManager.set_ui(&TimeDisplay);
     }
   }
 }

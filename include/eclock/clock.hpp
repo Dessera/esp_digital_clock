@@ -197,12 +197,8 @@ class RTClockVisualizer {
     }
     num = num < 0 ? 10 : num;
 
-    uint8_t num_mask =
-        pos == 2 ? LED_VISUALIZE_DOT_INVERSED : LED_VISUALIZE_DOT;
-    uint8_t num_map = pos == 2 ? LED_VISUALIZE_NUM_TABLE_INVERSED[num]
-                               : LED_VISUALIZE_NUM_TABLE[num];
-    m_buffer[pos] &= num_mask;
-    m_buffer[pos] |= num_map;
+    m_buffer[pos] &= LED_VISUALIZE_DOT;
+    m_buffer[pos] |= LED_VISUALIZE_NUM_TABLE[num];
 
     buffer_edited_flag = true;
   }
@@ -218,9 +214,8 @@ class RTClockVisualizer {
       return;
     }
 
-    uint8_t dot_mask =
-        pos == 2 ? LED_VISUALIZE_DOT_INVERSED : LED_VISUALIZE_DOT;
-    m_buffer[pos] = (m_buffer[pos] & ~dot_mask) | (dot ? dot_mask : 0x00);
+    m_buffer[pos] =
+        (m_buffer[pos] & ~LED_VISUALIZE_DOT) | (dot ? LED_VISUALIZE_DOT : 0x00);
 
     buffer_edited_flag = true;
   }

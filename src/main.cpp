@@ -56,8 +56,8 @@ void eclock_alarm_task(void* arg) {
   static time_t current = 0;
   while (true) {
     current = GlobalRTClock.get_time();
-    GlobalRTClockAlarmWatcher.spin_once(current);
-    GlobalRTClockAlarmWatcher.sync_beep(current);
+    // GlobalRTClockAlarmWatcher.spin_once(current);
+    // GlobalRTClockAlarmWatcher.sync_beep(current);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -82,15 +82,6 @@ void setup() {
               1, &eclock_ui_manager_task_handle);
   xTaskCreate(eclock_alarm_task, "eclock_alarm_task", 1024, nullptr, 1,
               &eclock_alarm_task_handle);
-  // Serial.begin(LOGGER_USING_BAUD);
-  // GlobalButtonGroup.create_button(BUTTON_1_USING_PIN, BUTTON_PRESS_THRESHOLD,
-  //                                 BUTTON_LONG_PRESS_THRESHOLD);
-  // GlobalButtonGroup.create_button(BUTTON_2_USING_PIN, BUTTON_PRESS_THRESHOLD,
-  //                                 BUTTON_LONG_PRESS_THRESHOLD);
-  // GlobalButtonGroup.create_button(BUTTON_3_USING_PIN, BUTTON_PRESS_THRESHOLD,
-  //                                 BUTTON_LONG_PRESS_THRESHOLD);
-  // GlobalButtonGroup.begin();
-  // GlobalRTClockVisualizer.begin();
 }
 
 void loop() {}

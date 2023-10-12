@@ -333,7 +333,7 @@ void ConfigUI::increase_current(int step) {
       break;
     case 1:
       init_brightness += step;
-      init_brightness = init_brightness > 8 ? 0 : init_brightness;
+      init_brightness = init_brightness > 8 ? 1 : init_brightness;
       init_brightness = init_brightness < 1 ? 8 : init_brightness;
       break;
     default:

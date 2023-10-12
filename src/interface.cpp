@@ -62,6 +62,12 @@ void TimeDisplayUI::on_tick() {
   GlobalRTClockVisualizer.set_wdot(
       this->digit_windows[this->current_digit_window]->get_wdot(
           this->current_tm));
+
+  if (GlobalRTClockAlarmWatcher.is_alarm_enabled()) {
+    GlobalRTClockVisualizer.set_dot(3, true);
+  } else {
+    GlobalRTClockVisualizer.set_dot(3, false);
+  }
 }
 
 void TimeDisplayUI::format_time() {
@@ -128,6 +134,12 @@ void TimeEditUI::on_tick() {
       this->digit_windows[this->current_digit_window]->get_rnum(current_tm));
   GlobalRTClockVisualizer.set_wdot(
       this->digit_windows[this->current_digit_window]->get_wdot(current_tm));
+
+  if (GlobalRTClockAlarmWatcher.is_alarm_enabled()) {
+    GlobalRTClockVisualizer.set_dot(3, true);
+  } else {
+    GlobalRTClockVisualizer.set_dot(3, false);
+  }
 }
 
 void TimeEditUI::increase_current_time(int step) {
@@ -226,6 +238,12 @@ void AlarmUI::on_tick() {
       this->digit_windows[this->current_digit_window]->get_rnum(current_tm));
   GlobalRTClockVisualizer.set_wdot(
       this->digit_windows[this->current_digit_window]->get_wdot(current_tm));
+
+  if (GlobalRTClockAlarmWatcher.is_alarm_enabled()) {
+    GlobalRTClockVisualizer.set_dot(3, true);
+  } else {
+    GlobalRTClockVisualizer.set_dot(3, false);
+  }
 }
 
 void AlarmUI::increase_current_time(int step) {
@@ -322,6 +340,12 @@ void ConfigUI::on_tick() {
       this->digit_windows[this->current_digit_window]->get_rnum(current_tm));
   GlobalRTClockVisualizer.set_wdot(
       this->digit_windows[this->current_digit_window]->get_wdot(current_tm));
+
+  if (GlobalRTClockAlarmWatcher.is_alarm_enabled()) {
+    GlobalRTClockVisualizer.set_dot(3, true);
+  } else {
+    GlobalRTClockVisualizer.set_dot(3, false);
+  }
 }
 
 void ConfigUI::increase_current(int step) {

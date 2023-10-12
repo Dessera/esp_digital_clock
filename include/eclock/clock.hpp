@@ -299,6 +299,8 @@ class RTClockAlarmWatcher {
     end = alarm + 271;
   }
 
+  inline bool is_alarm_enabled() { return start != 0 && end != 0; }
+
   inline void disable_alarm() {
     start = 0;
     end = 0;

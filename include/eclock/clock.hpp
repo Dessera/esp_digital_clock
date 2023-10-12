@@ -2,16 +2,18 @@
 
 #include <sys/_timeval.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <queue>
 #include <vector>
 
-#include "Print.h"
 #include "RtcDS1302.h"
 #include "SlowSoftI2CMaster.h"
 #include "ThreeWire.h"
 #include "eclock/config.hpp"
+#include "eclock/music.hpp"
 #include "esp32-hal-gpio.h"
+#include "esp32-hal-ledc.h"
 
 /**
  * @brief DS1302 RTC Wrapper
@@ -95,8 +97,6 @@ class RTClock {
 
 constexpr static uint8_t LED_VISUALIZE_NUM_TABLE[11] = {
     0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x00};
-constexpr static uint8_t LED_VISUALIZE_NUM_TABLE_INVERSED[11] = {
-    0xaf, 0xa0, 0xC7, 0xE5, 0xE8, 0x6d, 0x6F, 0xA4, 0xEF, 0xED, 0x00};
 constexpr static uint8_t LED_POS_TABLE[4] = {0x68, 0x6A, 0x6C, 0x6E};
 
 /**
@@ -113,9 +113,8 @@ class RTClockVisualizer {
   using ScreenConfig = uint8_t;
 
   constexpr static uint8_t LED_VISUALIZE_DOT = 0x80;
-  constexpr static uint8_t LED_VISUALIZE_DOT_INVERSED = 0x10;
 
-  constexpr static uint8_t BRIGHTNESS_MASK = 0x80;
+  constexpr static uint8_t BRIGHTNESS_MASK = 0x07;
   constexpr static uint8_t DISPLAY_MASK = 0x01;
 
  private:
@@ -124,11 +123,11 @@ class RTClockVisualizer {
   ScreenConfig m_config{0};
 
   bool buffer_edited_flag{false};
+  bool config_edited_flag{false};
 
  public:
-  explicit RTClockVisualizer(uint8_t brightness = 0b00000111,
-                             bool display = true)
-      : m_config(brightness << 4 | (display ? 0x01 : 0x00)) {
+  explicit RTClockVisualizer(uint8_t brightness = 0x07)
+      : m_config(brightness << 4 | 0x01) {
     prot.i2c_init();
     prot.i2c_start_wait(DEV);
     prot.i2c_write(m_config);
@@ -138,6 +137,8 @@ class RTClockVisualizer {
 
   inline bool is_buffer_edited() { return buffer_edited_flag; }
   inline void clear_buffer_edited_flag() { buffer_edited_flag = false; }
+  inline bool is_config_edited() { return config_edited_flag; }
+  inline void clear_config_edited_flag() { config_edited_flag = false; }
 
   /**
    * @brief Set the brightness of LED
@@ -145,18 +146,11 @@ class RTClockVisualizer {
    * @param brightness Brightness of LED (0x00 ~ 0x07)
    */
   void set_brightness(uint8_t brightness) {
-    m_config =
-        ((brightness << 4) & BRIGHTNESS_MASK) | (m_config & ~BRIGHTNESS_MASK);
+    m_config = (brightness << 4) | 0x01;
+    config_edited_flag = true;
   }
 
-  /**
-   * @brief Set the display of LED
-   *
-   * @param display Display LED or not
-   */
-  void set_display(bool display) {
-    m_config = (display ? 0x01 : 0x00) | (m_config & ~DISPLAY_MASK);
-  }
+  uint8_t get_brightness() { return m_config >> 4; }
 
   /**
    * @brief Send config to LED
@@ -274,57 +268,21 @@ class RTClockVisualizer {
     set_dot(1, dot);
     set_dot(2, dot);
   }
-
-  /**
-   * @brief disable the display of specific position
-   *
-   * @param pos num position (0 ~ 3)
-   */
-  // void unset_num(uint8_t pos) {
-  //   if (pos > 3) {
-  //     return;
-  //   }
-
-  //   m_buffer[pos] &=
-  //       (pos == 2 ? LED_VISUALIZE_DOT_INVERSED : LED_VISUALIZE_DOT);
-  // }
-
-  /**
-   * @brief disable the display of 2-digit num
-   *
-   * @param pos num position (0 ~ 2)
-   */
-  // inline void unset_wnum(uint8_t pos) {
-  //   unset_num(pos);
-  //   unset_num(pos + 1);
-  // }
-
-  /**
-   * @brief disable the display of left screen num (2-digit)
-   *
-   */
-  // inline void unset_lnum() { unset_wnum(0); }
-
-  /**
-   * @brief disable the display of right screen num (2-digit)
-   *
-   */
-  // inline void unset_rnum() { unset_wnum(2); }
 };
 
 template <uint8_t BEEP>
 class RTClockAlarmWatcher {
  private:
   uint8_t beep_strength;
-  std::vector<time_t> m_alarm_list;
 
   time_t start{0};
   time_t end{0};
 
  public:
   explicit RTClockAlarmWatcher(uint8_t strength) : beep_strength(strength) {
-    pinMode(BEEP, OUTPUT);
-  };
+    ledcSetup(0, 1000, 8);
+    ledcAttachPin(BEEP, 0);
+  }
   ~RTClockAlarmWatcher() = default;
 
   RTClockAlarmWatcher(const RTClockAlarmWatcher&) = delete;
@@ -335,41 +293,58 @@ class RTClockAlarmWatcher {
   inline int get_beep_strength() { return beep_strength; }
   inline void set_beep_strength(uint8_t strength) { beep_strength = strength; }
 
-  inline void add_alarm(time_t alarm) {
+  inline void enable_alarm(time_t alarm) {
     // ensure alarm is sorted, so use binary search to insert
-    auto it = std::lower_bound(m_alarm_list.begin(), m_alarm_list.end(), alarm);
+    start = alarm;
+    end = alarm + 271;
   }
 
-  inline void clear_alarm() { m_alarm_list.clear(); }
+  inline void disable_alarm() {
+    start = 0;
+    end = 0;
+  }
+
+  inline void move_to_next_day() {
+    if (start == 0 && end == 0) {
+      return;
+    }
+    start += 86400;
+    end += 86400;
+  }
 
   void spin_once(time_t current) {
-    if (!m_alarm_list.empty()) {
-      time_t next_alarm = m_alarm_list.front();
-      if (current >= next_alarm) {
-        m_alarm_list.erase(m_alarm_list.begin());
-        start = current;
-        end = current + 1;
-      }
+    static uint8_t index = 0;
+    if (start == 0 && end == 0) {
+      index = 0;
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      return;
     }
 
-    // start and end check
-    if (start != 0 && end != 0) {
-      if (current >= end) {
-        start = 0;
-        end = 0;
-      }
+    if (current > end) {
+      // move to next day
+      start += 86400;
+      end += 86400;
+      index = 0;
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      return;
     }
-  }
 
-  void sync_beep(time_t current) {
-    if (start != 0 && end != 0) {
-      if (current >= start && current < end) {
-        analogWrite(BEEP, beep_strength);
-      } else {
-        digitalWrite(BEEP, LOW);
-      }
+    if (current < start) {
+      index = 0;
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      return;
+    }
+
+    int music_index = music[index];
+    index = (index + 1) % 271;
+
+    if (music_index == 0) {
+      vTaskDelay(166 / portTICK_PERIOD_MS);
     } else {
-      digitalWrite(BEEP, LOW);
+      ledcWrite(0, beep_strength);
+      ledcChangeFrequency(0, select_music(music_index), 10);
+      vTaskDelay(166 / portTICK_PERIOD_MS);
+      ledcWrite(0, 0);
     }
   }
 };

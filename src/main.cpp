@@ -17,6 +17,10 @@ void eclock_update_screen_task(void* arg) {
       GlobalRTClockVisualizer.sync_buffer();
       GlobalRTClockVisualizer.clear_buffer_edited_flag();
     }
+    if (GlobalRTClockVisualizer.is_config_edited()) {
+      GlobalRTClockVisualizer.sync_config();
+      GlobalRTClockVisualizer.clear_config_edited_flag();
+    }
 
     // delay 0.5s
     vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -53,12 +57,8 @@ void eclock_ui_manager_task(void* arg) {
 
 TaskHandle_t eclock_alarm_task_handle;
 void eclock_alarm_task(void* arg) {
-  static time_t current = 0;
   while (true) {
-    current = GlobalRTClock.get_time();
-    // GlobalRTClockAlarmWatcher.spin_once(current);
-    // GlobalRTClockAlarmWatcher.sync_beep(current);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    GlobalRTClockAlarmWatcher.spin_once(GlobalRTClock.get_time());
   }
 }
 

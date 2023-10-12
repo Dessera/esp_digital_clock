@@ -140,7 +140,7 @@ class TimeEditUI : public UserInterface {
   std::array<std::unique_ptr<DigitWindow>, 6> digit_windows;
   uint8_t current_digit_window{0};
 
-  void increase_current_time();
+  void increase_current_time(int step);
 
  public:
   TimeEditUI();
@@ -148,7 +148,6 @@ class TimeEditUI : public UserInterface {
   void on_tick() override;
   void on_event(const ButtonEvent& event) override;
   void on_load(UserInterface* previous_ui) override;
-  void on_unload(UserInterface* next_ui) override;
 };
 
 class AlarmUI : public UserInterface {
@@ -158,19 +157,24 @@ class AlarmUI : public UserInterface {
   std::array<std::unique_ptr<DigitWindow>, 6> digit_windows;
   uint8_t current_digit_window{0};
 
-  void increase_current_time();
+  void increase_current_time(int step);
 
  public:
+  AlarmUI();
+
   void on_tick() override;
   void on_event(const ButtonEvent& event) override;
   void on_load(UserInterface* previous_ui) override;
-  void on_unload(UserInterface* next_ui) override;
 };
 
 class ConfigUI : public UserInterface {
  private:
   int init_brightness{0};
   int beep_strength{0};
+  uint8_t current_digit_window{0};
+  time_t last_tm{0};
+
+  std::array<std::unique_ptr<DigitWindow>, 2> digit_windows;
 
  public:
   ConfigUI();
@@ -178,10 +182,13 @@ class ConfigUI : public UserInterface {
   void on_tick() override;
   void on_event(const ButtonEvent& event) override;
   void on_load(UserInterface* previous_ui) override;
-  void on_unload(UserInterface* next_ui) override;
+
+  void increase_current(int step);
 };
 
 extern UserInterfaceManager GlobalUIManager;
 
 extern TimeDisplayUI TimeDisplay;
 extern TimeEditUI TimeEdit;
+extern AlarmUI Alarm;
+extern ConfigUI Config;

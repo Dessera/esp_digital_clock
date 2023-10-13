@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 
+#include "Preferences.h"
 #include "RtcDS1302.h"
 #include "SlowSoftI2CMaster.h"
 #include "ThreeWire.h"
@@ -147,6 +148,10 @@ class RTClockVisualizer {
    */
   void set_brightness(uint8_t brightness) {
     m_config = (brightness << 4) | 0x01;
+    Preferences pref;
+    pref.begin("eclock", false);
+    pref.putChar("brightness", get_brightness());
+    pref.end();
     config_edited_flag = true;
   }
 
@@ -291,12 +296,22 @@ class RTClockAlarmWatcher {
   RTClockAlarmWatcher& operator=(RTClockAlarmWatcher&&) noexcept = default;
 
   inline int get_beep_strength() { return beep_strength; }
-  inline void set_beep_strength(uint8_t strength) { beep_strength = strength; }
+  inline void set_beep_strength(uint8_t strength) {
+    beep_strength = strength;
+    Preferences pref;
+    pref.begin("eclock", false);
+    pref.putLong("beep_strength", strength);
+    pref.end();
+  }
 
   inline void enable_alarm(time_t alarm) {
     // ensure alarm is sorted, so use binary search to insert
     start = alarm;
     end = alarm + 271;
+    Preferences pref;
+    pref.begin("eclock", false);
+    pref.putLong("alarm_time", alarm);
+    pref.end();
   }
 
   inline bool is_alarm_enabled() { return start != 0 && end != 0; }
@@ -304,6 +319,10 @@ class RTClockAlarmWatcher {
   inline void disable_alarm() {
     start = 0;
     end = 0;
+    Preferences pref;
+    pref.begin("eclock", false);
+    pref.putLong("alarm_time", 0);
+    pref.end();
   }
 
   inline void move_to_next_day() {
@@ -312,6 +331,10 @@ class RTClockAlarmWatcher {
     }
     start += 86400;
     end += 86400;
+    Preferences pref;
+    pref.begin("eclock", false);
+    pref.putLong("alarm_time", start);
+    pref.end();
   }
 
   void spin_once(time_t current) {

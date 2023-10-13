@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <Preferences.h>
+#include <sys/_stdint.h>
 
 #include "eclock/button.hpp"
 #include "eclock/clock.hpp"
@@ -64,6 +66,19 @@ void eclock_alarm_task(void* arg) {
 
 void setup() {
   Serial.begin(LOGGER_BAUD);
+
+  // 持久化存储
+  Preferences preferences;
+  preferences.begin("eclock", false);
+  time_t alarm = preferences.getLong("alarm_time", 0);
+  uint8_t beep_strength = preferences.getChar("beep_strength", BEEP_STRENGTH);
+  uint8_t brightness = preferences.getChar("brightness", 7);
+  preferences.end();
+  if (alarm != 0) {
+    GlobalRTClockAlarmWatcher.enable_alarm(alarm);
+  }
+  GlobalRTClockAlarmWatcher.set_beep_strength(beep_strength);
+  GlobalRTClockVisualizer.set_brightness(brightness);
 
   GlobalEventQueue.create_button(BTN_1_PIN, BTN_PRESS_THRESHOLD,
                                  BTN_LONG_PRESS_THRESHOLD);
